@@ -1,0 +1,18 @@
+header {
+  position: sticky;
+  top: 0;
+  background-color: #1d283c;
+  color: white;
+  margin-bottom: 5px;
+  padding: 10px;
+  z-index: 2;
+
+  height: 34px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 24px;
+
+  cursor: pointer;
+}

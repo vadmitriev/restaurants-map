@@ -1,0 +1,19 @@
+footer {
+  border-top: 1px solid #1d283c;
+
+  padding: 10px 0;
+  left: 0;
+  bottom: 0;
+  height: 20px;
+  width: 100%;
+
+  a {
+    color: #6d5d94;
+  }
+
+  position: absolute;
+  right: 0;
+
+  z-index: 2;
+  background-color: white;
+}
