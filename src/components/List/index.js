@@ -21,7 +21,7 @@ const List = ({ onClick, onLinkClick, onSearch }) => {
         store.loadNextPage();
       }
     },
-    [store.items]
+    [store.selectedItem]
   );
 
   useEffect(() => {
