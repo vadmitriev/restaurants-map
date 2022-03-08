@@ -104,7 +104,6 @@ const ItemPage = () => {
             <a href={`tel:${item.international_phone_number}`}>{item.international_phone_number}</a>
           </div>
           <div className="rating">⭐ {item.rating}</div>
-
           <div className="address">{item.formatted_address}</div>
           <div className="hours">
             <ul>
