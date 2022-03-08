@@ -13,6 +13,7 @@ class RestaurantStore {
   _items = [];
 
   _query = '';
+  _map = null;
 
   loadNextPage = () => {};
 
@@ -37,7 +38,16 @@ class RestaurantStore {
   }
 
   setItems(data) {
-    this._items = [...this._items, ...data];
+    this._items = data;
+  }
+
+  addItems(data) {
+    data.forEach((newItem) => {
+      const oldItem = this._items.find((item) => item.place_id === newItem.place_id);
+      if (!oldItem) {
+        this._items.push(newItem);
+      }
+    });
   }
 
   get items() {
@@ -66,6 +76,18 @@ class RestaurantStore {
 
   setQuery(query) {
     this._query = query;
+  }
+
+  findItem(id) {
+    return toJS(this._items).find((el) => el.place_id === id);
+  }
+
+  get map() {
+    return toJS(this._map);
+  }
+
+  setMap(map) {
+    this._map = map;
   }
 }
 

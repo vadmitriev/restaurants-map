@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import { observer } from 'mobx-react-lite';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
-import { Context } from '../../index';
+import { Context } from '../../';
 
 import compass from 'assets/compass.svg';
 
@@ -161,13 +161,10 @@ const Map = ({ onLinkClick, onClose }) => {
 
   const onLoad = (map) => {
     setMap(map);
+    store.setMap(map);
     addLocateButton(map);
 
     searchNearby(map, map.center);
-  };
-
-  const handleClick = (e) => {
-    console.log('handleClick', e, e.latLng.lat(), e.latLng.lng());
   };
 
   const handleZoom = () => {
@@ -211,7 +208,11 @@ const Map = ({ onLinkClick, onClose }) => {
         <div className="item-name">{item.name}</div>
 
         <div className="item-address">
-          {item.formatted_address ? <span>{item.formatted_address}</span> : null}
+          {item.formatted_address ? (
+            <span>{item.formatted_address}</span>
+          ) : item.vicinity ? (
+            <span>{item.vicinity}</span>
+          ) : null}
         </div>
         <div className="item-rating">{item.rating ? <span>⭐ {item.rating}</span> : null}</div>
         <div className="item-link" onClick={() => onLinkClick(item.place_id)}>
@@ -229,7 +230,6 @@ const Map = ({ onLinkClick, onClose }) => {
         center={center}
         onLoad={onLoad}
         clickableIcons={false}
-        onClick={handleClick}
         onZoomChanged={handleZoom}
       >
         {store.items.map((item) => (
