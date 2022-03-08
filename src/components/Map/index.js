@@ -124,7 +124,11 @@ const Map = ({ onLinkClick, onClose }) => {
       }
 
       if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        store.setItems(results);
+        if (store.page === 1) {
+          store.setItems(results);
+        } else {
+          store.addItems(results);
+        }
       } else {
         console.log(status);
       }
@@ -170,10 +174,6 @@ const Map = ({ onLinkClick, onClose }) => {
   const handleZoom = () => {
     const zoom = map?.getZoom();
     store.setZoom(zoom);
-  };
-
-  const handleMouseDown = (e) => {
-    console.log(e);
   };
 
   const handleMarkerClick = (item) => {
@@ -242,7 +242,6 @@ const Map = ({ onLinkClick, onClose }) => {
               lat: item.geometry.location.lat(),
               lng: item.geometry.location.lng()
             }}
-            onMouseDown={handleMouseDown}
           />
         ))}
 

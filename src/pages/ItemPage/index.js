@@ -37,8 +37,6 @@ const ItemPage = () => {
 
     service.getDetails(request, (place, status) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        console.log(place);
-
         store.setSelectedItem(place);
       }
     });

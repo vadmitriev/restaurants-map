@@ -18,7 +18,6 @@ const List = ({ onClick, onLinkClick, onSearch }) => {
     (entries) => {
       const target = entries[0];
       if (target.isIntersecting) {
-        console.log('isIntersection');
         store.loadNextPage();
       }
     },
@@ -29,7 +28,7 @@ const List = ({ onClick, onLinkClick, onSearch }) => {
     const options = {
       root: null,
       rootMargin: '20px',
-      threshold: 0
+      threshold: 1.0
     };
     const observe = new IntersectionObserver(handleObserver, options);
     if (loaderRef.current) {
