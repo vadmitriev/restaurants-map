@@ -84,14 +84,17 @@ const ItemPage = () => {
       <div className="item-page__wrapper">
         <div className="photos-wrapper">
           {item.photos &&
-            item.photos.map((photo) => (
-              <ImageCard
-                onClick={() => handlePhotoClick(photo.getUrl())}
-                key={item.place_id}
-                url={photo.getUrl()}
-                alt={photo.html_attributions[0]}
-              />
-            ))}
+            item.photos.map((photo, idx) => {
+              if (idx >= 9) return null;
+              return (
+                <ImageCard
+                  onClick={() => handlePhotoClick(photo.getUrl())}
+                  key={item.place_id}
+                  url={photo.getUrl()}
+                  alt={photo.html_attributions[0]}
+                />
+              );
+            })}
         </div>
         <div className="info-wrapper">
           <div className="site">
@@ -105,6 +108,12 @@ const ItemPage = () => {
           <div className="rating">⭐ {item.rating}</div>
 
           <div className="address">{item.formatted_address}</div>
+          <div className="hours">
+            <ul>
+              {item.opening_hours?.weekday_text &&
+                item.opening_hours.weekday_text.map((day) => <li key={day}>{day}</li>)}
+            </ul>
+          </div>
         </div>
       </div>
       <Modal isOpen={isModalVisible} onCloseModal={handleCloseModal} body={selectedPicture} />
