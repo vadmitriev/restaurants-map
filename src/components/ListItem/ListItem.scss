@@ -1,11 +1,53 @@
 .wrapper {
+  margin-top: 10px;
   cursor: pointer;
 
-  box-shadow: 0 0 20px 8px #d0d0d0;
+  overflow: hidden;
+
+  background-color: white;
 
   margin-bottom: 5px;
 
-  .content {
+  &:hover {
+    background-color: aliceblue;
+  }
 
+  .content {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+
+    .list-item__name {
+      font-size: 1.2em;
+      font-weight: 500;
+    }
+
+    .list-item__img {
+
+    }
+
+    .list-item__address {
+
+    }
+
+    .list-item__info {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+
+      .list-item__rating {
+
+      }
+
+      .list-item__link {
+        margin-left: 20%;
+        color: #427fed;
+        cursor: pointer;
+
+        &:hover {
+          border: #1d283c 1px solid;
+        }
+      }
+    }
   }
 }

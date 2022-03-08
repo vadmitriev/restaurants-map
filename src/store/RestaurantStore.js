@@ -1,34 +1,31 @@
 import { makeAutoObservable, toJS } from 'mobx';
-import { makePersistable } from 'mobx-persist-store';
 
 class RestaurantStore {
-  _isLoading = true;
+  _page = 10;
 
   _currentPosition = {
-    lat: 28.6139,
-    lng: 77.209
+    lat: 58.01216,
+    lng: 56.2384
   };
 
   _zoom = 15;
   _selectedItem = null;
   _items = [];
 
-  _modalVisible = false;
+  _query = '';
+
+  loadNextPage = () => {};
 
   constructor() {
     makeAutoObservable(this);
-    // makePersistable(this, {
-    //   name: 'RestaurantStore',
-    //   properties: ['currentPosition', 'zoom', 'selectedItem']
-    // });
   }
 
-  get isLoading() {
-    return this._isLoading;
+  get page() {
+    return this._page;
   }
 
-  setIsLoading(value) {
-    this._isLoading = value;
+  setPage(page) {
+    this._page = page;
   }
 
   get selectedItem() {
@@ -40,7 +37,7 @@ class RestaurantStore {
   }
 
   setItems(data) {
-    this._items = data;
+    this._items = [...this._items, ...data];
   }
 
   get items() {
@@ -63,12 +60,12 @@ class RestaurantStore {
     this._currentPosition = position;
   }
 
-  get modalVisible() {
-    return this._modalVisible;
+  get query() {
+    return toJS(this._query);
   }
 
-  setModalVisible(value) {
-    this._modalVisible = value;
+  setQuery(query) {
+    this._query = query;
   }
 }
 

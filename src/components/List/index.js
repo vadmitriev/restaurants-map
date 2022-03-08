@@ -1,47 +1,60 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
 
 import { observer } from 'mobx-react-lite';
-
-import { useNavigate } from 'react-router-dom';
-
-import { Context } from '../..';
 
 import { ListItem } from 'components';
 import { Input } from 'components';
 
+import { Context } from '../..';
+
 import './List.scss';
 
-const List = () => {
+const List = ({ onClick, onLinkClick, onSearch }) => {
   const { store } = useContext(Context);
 
-  const navigator = useNavigate();
+  const loaderRef = useRef(null);
 
-  const onSubmit = (value) => {
-    console.log(value);
-  };
+  const handleObserver = useCallback(
+    (entries) => {
+      const target = entries[0];
+      if (target.isIntersecting) {
+        console.log('isIntersection');
+        store.loadNextPage();
+      }
+    },
+    [store]
+  );
 
-  const handleClick = (e) => {
-    console.log(e);
-  };
-
-  const handleLinkClick = (e) => {
-    navigator(`/restaurants/${e}`);
-  };
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: '20px',
+      threshold: 0
+    };
+    const observe = new IntersectionObserver(handleObserver, options);
+    if (loaderRef.current) {
+      observe.observe(loaderRef.current);
+    }
+  }, [handleObserver]);
 
   return (
     <div className="list-wrapper">
-      <Input onSubmit={onSubmit} />
-      <div className="list">
-        {store.items.map((item) => (
-          <ListItem
-            key={item.place_id}
-            name={item.name}
-            rating={item.rating}
-            onClick={() => handleClick(item.place_id)}
-            onLinkClick={() => handleLinkClick(item.place_id)}
-          />
-        ))}
-      </div>
+      <Input onSubmit={onSearch} />
+      {store.items.length ? (
+        <div className="list">
+          {store.items.map((item) => (
+            <ListItem
+              key={item.place_id}
+              item={item}
+              onClick={() => onClick(item)}
+              onLinkClick={() => onLinkClick(item.place_id)}
+            />
+          ))}
+          <div ref={loaderRef} />
+        </div>
+      ) : (
+        <div style={{ marginTop: '10px' }}>Здесь ничего нет</div>
+      )}
     </div>
   );
 };

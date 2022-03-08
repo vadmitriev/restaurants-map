@@ -1,26 +1,28 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import { observer } from 'mobx-react-lite';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { Context } from '../../index';
 
-import { Marker as CustomMarker } from 'components';
+import compass from 'assets/compass.svg';
 
+import { Spinner } from 'components';
 import './Map.scss';
-import Spinner from '../Spinner';
 
-import { GoogleMap, useJsApiLoader, Marker, InfoBox } from '@react-google-maps/api';
-
-let center = {
-  lat: 57.97629,
-  lng: 56.21793
-};
 const libraries = ['places'];
+const requestTypes = ['cafe', 'restaurant', 'food'];
 
-const Map = ({ query, placeId, onClick }) => {
+const Map = ({ onLinkClick, onClose }) => {
   const { store } = useContext(Context);
 
+  const { query, placeId, currentPosition } = store;
+
   const [map, setMap] = useState(null);
-  const [markerMap, setMarkerMap] = useState({});
+
+  let center = {
+    lat: currentPosition.lat,
+    lng: currentPosition.lng
+  };
 
   const searchByQuery = useCallback(
     (map, query) => {
@@ -29,18 +31,19 @@ const Map = ({ query, placeId, onClick }) => {
 
       const request = {
         location: map.center,
-        radius: '200',
-        type: ['restaurant'],
+        radius: '2000',
+        types: requestTypes,
+        pageToken: store.page,
         query
       };
 
       service.textSearch(request, (results, status) => {
-        if (status === window.google.maps.places.PlacesService.OK) {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           store.setItems(results);
         }
       });
     },
-    [map, query]
+    [store]
   );
 
   const getDetails = useCallback(
@@ -50,7 +53,14 @@ const Map = ({ query, placeId, onClick }) => {
 
       const request = {
         placeId,
-        fields: ['name', 'opening_hours', 'formatted_address', 'formatted_phone_number']
+        fields: [
+          'name',
+          'opening_hours',
+          'formatted_address',
+          'formatted_phone_number',
+          'rating',
+          'website'
+        ]
       };
 
       service.getDetails(request, (place, status) => {
@@ -59,23 +69,8 @@ const Map = ({ query, placeId, onClick }) => {
         }
       });
     },
-    [map, placeId]
+    [map, store]
   );
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const { latitude, longitude } = coords;
-        center = { lat: latitude, lng: longitude };
-      },
-      () => {
-        center = {
-          lat: 57.97629,
-          lng: 56.21793
-        };
-      }
-    );
-  }, []);
 
   useEffect(() => {
     if (query) {
@@ -88,6 +83,23 @@ const Map = ({ query, placeId, onClick }) => {
       getDetails(placeId);
     }
   }, [placeId, getDetails]);
+
+  useEffect(() => {
+    if (!map || !store.selectedItem) {
+      return;
+    }
+    const currentCenter = map.getCenter();
+
+    const { location } = store.selectedItem.geometry;
+    const coord = {
+      lat: location.lat(),
+      lng: location.lng()
+    };
+    const isCurrentPos = currentCenter.lng() === coord.lng && currentCenter.lng() === coord.lat;
+    if (!isCurrentPos) {
+      setCenter(store.selectedItem);
+    }
+  }, [map, store.selectedItem]);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -102,10 +114,15 @@ const Map = ({ query, placeId, onClick }) => {
     const request = {
       location: center,
       radius: '20000',
-      type: ['restaurant']
+      pageToken: store.page,
+      types: requestTypes
     };
 
-    service.nearbySearch(request, (results, status) => {
+    service.nearbySearch(request, (results, status, pagination) => {
+      if (pagination && pagination.hasNextPage) {
+        store.loadNextPage = () => pagination.nextPage();
+      }
+
       if (status === window.google.maps.places.PlacesServiceStatus.OK) {
         store.setItems(results);
       } else {
@@ -114,13 +131,43 @@ const Map = ({ query, placeId, onClick }) => {
     });
   };
 
+  const addLocateButton = (map) => {
+    const getCurrentPosition = () => {
+      if (!window.navigator) {
+        return;
+      }
+      navigator.geolocation?.getCurrentPosition(
+        (position) => {
+          store.setCurrentPosition({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        () => null
+      );
+    };
+
+    const locate = document.createElement('div');
+
+    locate.className = 'locate';
+    locate.innerHTML = `
+      <img src=${compass} alt="compass" />
+    `;
+
+    locate.addEventListener('click', getCurrentPosition);
+
+    map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(locate);
+  };
+
   const onLoad = (map) => {
     setMap(map);
+    addLocateButton(map);
+
     searchNearby(map, map.center);
   };
 
   const handleClick = (e) => {
-    console.log(e);
+    console.log('handleClick', e, e.latLng.lat(), e.latLng.lng());
   };
 
   const handleZoom = () => {
@@ -132,30 +179,86 @@ const Map = ({ query, placeId, onClick }) => {
     console.log(e);
   };
 
+  const handleMarkerClick = (item) => {
+    setCenter(item);
+    store.setSelectedItem(item);
+  };
+
+  const setCenter = (item) => {
+    const coord = {
+      lat: item.geometry.location.lat(),
+      lng: item.geometry.location.lng()
+    };
+    map.setCenter(coord);
+    store.setCurrentPosition(coord);
+  };
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude, longitude } = coords;
+        center = { lat: latitude, lng: longitude };
+      },
+      () => {
+        center = store.currentPosition;
+      }
+    );
+  }, []);
+
+  const InfoContent = ({ item }) => {
+    return (
+      <div className="info-content">
+        <div className="item-name">{item.name}</div>
+
+        <div className="item-address">
+          {item.formatted_address ? <span>{item.formatted_address}</span> : null}
+        </div>
+        <div className="item-rating">{item.rating ? <span>⭐ {item.rating}</span> : null}</div>
+        <div className="item-link" onClick={() => onLinkClick(item.place_id)}>
+          Подробнее
+        </div>
+      </div>
+    );
+  };
+
   return isLoaded ? (
-    <GoogleMap
-      mapContainerClassName="map"
-      zoom={store.zoom}
-      center={center}
-      onLoad={onLoad}
-      clickableIcons={false}
-      onClick={handleClick}
-      onZoomChanged={handleZoom}
-    >
-      {store.items.map((item) => (
-        <Marker
-          title={item.name}
-          key={item.place_id}
-          name={item.name}
-          onClick={() => onClick(item)}
-          position={{
-            lat: item.geometry.location.lat(),
-            lng: item.geometry.location.lng()
-          }}
-          onMouseDown={handleMouseDown}
-        />
-      ))}
-    </GoogleMap>
+    <div className="map-wrapper">
+      <GoogleMap
+        mapContainerClassName="map"
+        zoom={store.zoom || 15}
+        center={center}
+        onLoad={onLoad}
+        clickableIcons={false}
+        onClick={handleClick}
+        onZoomChanged={handleZoom}
+      >
+        {store.items.map((item) => (
+          <Marker
+            title={item.name}
+            key={item.place_id}
+            name={item.name}
+            onClick={() => handleMarkerClick(item)}
+            position={{
+              lat: item.geometry.location.lat(),
+              lng: item.geometry.location.lng()
+            }}
+            onMouseDown={handleMouseDown}
+          />
+        ))}
+
+        {store.selectedItem ? (
+          <InfoWindow
+            position={{
+              lat: store.selectedItem.geometry.location.lat(),
+              lng: store.selectedItem.geometry.location.lng()
+            }}
+            onCloseClick={onClose}
+          >
+            <InfoContent item={store.selectedItem} />
+          </InfoWindow>
+        ) : null}
+      </GoogleMap>
+    </div>
   ) : (
     <Spinner />
   );

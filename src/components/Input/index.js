@@ -1,5 +1,6 @@
 import React from 'react';
 
+import search from 'assets/search.svg';
 import './Input.scss';
 
 const Input = ({ onSubmit }) => {
@@ -18,8 +19,10 @@ const Input = ({ onSubmit }) => {
 
   return (
     <div className="input-wrapper">
-      <input type="text" className="textbox" placeholder="Search" onKeyUp={handleKeyUp} />
-      <input title="Search" value="🔎" type="submit" className="button" onSubmit={handleSubmit} />
+      <input type="text" className="textbox" placeholder="Поиск" onKeyUp={handleKeyUp} />
+      <span title="Search" className="button" onClick={handleSubmit}>
+        <img src={search} alt="search" onClick={handleSubmit} />
+      </span>
     </div>
   );
 };

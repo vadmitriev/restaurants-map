@@ -28,7 +28,7 @@
   .button {
     outline: 0;
     background: none;
-    background-color: rgba(38, 50, 56, 0.8);
+
     float: left;
     height: 42px;
     width: 42px;
@@ -49,4 +49,16 @@
         background-color: rgba(0, 150, 136, 0.8);
     }
   }
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    img {
+      width: 90%;
+      cursor: pointer;
+      background-color: transparent;
+    }
+  }
+
 }

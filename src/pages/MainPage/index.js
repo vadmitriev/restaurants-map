@@ -1,47 +1,40 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 
 import { List } from 'components';
 import { Map } from 'components';
-import { Modal } from 'components';
 
 import { Context } from '../../index';
 
 import './MainPage.scss';
 import { observer } from 'mobx-react-lite';
+import { useNavigate } from 'react-router-dom';
 
 const MainPage = () => {
   const { store } = useContext(Context);
-
-  // useEffect(() => {
-  //   store.loadItems();
-  // }, []);
+  const navigator = useNavigate();
 
   const handleClick = (item) => {
     console.log(item);
 
     store.setSelectedItem(item);
-    store.setModalVisible(true);
   };
 
-  const handleCloseModal = () => {
+  const handleLinkClick = (placeId) => {
+    navigator(`/restaurants/${placeId}`);
+  };
+
+  const handleClose = () => {
     store.setSelectedItem(null);
-    store.setModalVisible(false);
   };
 
-  const ItemDetails = () => {
-    return (
-      <>
-        test <br />
-        {store.selectedItem?.name}
-      </>
-    );
+  const handleSearch = (text) => {
+    store.setQuery(text);
   };
 
   return (
     <div className="main">
-      <List onClick={handleClick} />
-      <Map onClick={handleClick} />
-      <Modal isOpen={store.modalVisible} onCloseModal={handleCloseModal} body={<ItemDetails />} />
+      <List onClick={handleClick} onLinkClick={handleLinkClick} onSearch={handleSearch} />
+      <Map onLinkClick={handleLinkClick} onClose={handleClose} />
     </div>
   );
 };
