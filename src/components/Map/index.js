@@ -27,7 +27,7 @@ const Map = ({ onLinkClick, onClose }) => {
   const searchByQuery = useCallback(
     (map, query) => {
       const service = new window.google.maps.places.PlacesService(map);
-      store.setItems([]);
+      store.resetItems([]);
 
       const request = {
         location: map.center,

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 
 import { observer } from 'mobx-react-lite';
 
@@ -14,15 +14,12 @@ const List = ({ onClick, onLinkClick, onSearch }) => {
 
   const loaderRef = useRef(null);
 
-  const handleObserver = useCallback(
-    (entries) => {
-      const target = entries[0];
-      if (target.isIntersecting) {
-        store.loadNextPage();
-      }
-    },
-    [store.selectedItem]
-  );
+  const handleObserver = (entries) => {
+    const target = entries[0];
+    if (target.isIntersecting) {
+      store.loadNextPage();
+    }
+  };
 
   useEffect(() => {
     const options = {

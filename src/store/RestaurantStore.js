@@ -37,6 +37,10 @@ class RestaurantStore {
     this._selectedItem = item;
   }
 
+  resetItems() {
+    this._items = [];
+  }
+
   setItems(data) {
     this._items = data;
   }
